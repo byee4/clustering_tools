@@ -4,7 +4,7 @@
 basic module to use as an example.
 """
 import argparse
-
+import louvain
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
@@ -13,8 +13,10 @@ from sklearn.neighbors import NearestNeighbors
 def run_louvain(fn, algorithm):
     df = read_exprs_as_df(fn)
     k = get_k(df)
+    print("building graph...")
     graph = get_sparse_knn_graph(df, k, algorithm)
-    print("success")
+    print("running louvain find partition...")
+    # part = louvain.find_partition(graph, method='Modularity')
     exit(0)
 
 def get_sparse_knn_graph(df, k, algorithm):
