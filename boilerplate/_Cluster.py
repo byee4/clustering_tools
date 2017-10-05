@@ -1,27 +1,29 @@
 #!/usr/bin/env python
 
 """
-basic module to use as an example.
+basic module to use as a boilerplate for clustering methods that require
+building an adjacency graph first.
 """
 import argparse
-import louvain
+import CLUSTERING MODULE
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
+import pyflannCluster
 
-
-def run_louvain(fn, algorithm):
+def run_generic_clustering(fn, algorithm):
     df = read_exprs_as_df(fn)
     k = get_k(df)
-    print("building graph...")
     graph = get_sparse_knn_graph(df, k, algorithm)
-    print("running louvain find partition...")
-    # part = louvain.find_partition(graph, method='Modularity')
+    """
+    CLUSTERING LOGIC GOES HERE
+    """
+    print("success")
     exit(0)
 
 def get_sparse_knn_graph(df, k, algorithm):
     X = np.array(df)
-    nbrs = NearestNeighbors(n_neighbors=k, algorithm=algorithm).fit(X)
+    nbrs = NearestNeighbors(n_neighbors=k, algorithm=algorithm)
     knn_graph = nbrs.kneighbors_graph(X)
     return knn_graph
 
@@ -32,7 +34,7 @@ def read_exprs_as_df(fn):
     :param fn:
     :return:
     """
-    df = pd.read_table(fn, index_col=0)
+    df = pd.read_table(fn)
     return df
 
 def get_k(df):
@@ -64,7 +66,7 @@ def main():
 
     in_file = args.infile
     algorithm = 'ball_tree'
-    run_louvain(in_file, algorithm)
+    run_generic_clustering(in_file, algorithm)
 
 if __name__ == "__main__":
     main()
