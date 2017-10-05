@@ -19,7 +19,7 @@ def run_louvain(fn, algorithm):
 
 def get_sparse_knn_graph(df, k, algorithm):
     X = np.array(df)
-    nbrs = NearestNeighbors(n_neighbors=k, algorithm=algorithm)
+    nbrs = NearestNeighbors(n_neighbors=k, algorithm=algorithm).fit(X)
     knn_graph = nbrs.kneighbors_graph(X)
     return knn_graph
 
@@ -30,7 +30,7 @@ def read_exprs_as_df(fn):
     :param fn:
     :return:
     """
-    df = pd.read_table(fn)
+    df = pd.read_table(fn, index_col=0)
     return df
 
 def get_k(df):
