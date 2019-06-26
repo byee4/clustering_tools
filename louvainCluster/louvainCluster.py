@@ -6,6 +6,7 @@ matrices.
 """
 import argparse
 import louvain
+import igraph
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
@@ -22,31 +23,37 @@ def run_louvain(fn, algorithm):
     df = read_exprs_as_df(fn)
     k = get_k(df)
     print("building graph...")
-    graph = get_sparse_knn_graph(df, k, algorithm)
-    igraph = convert_sparse_to_igraph(graph)
+    indices, adj_matrix = get_sparse_knn_graph(df, k, algorithm)
+    igraph = convert_sparse_to_igraph(indices, adj_matrix)
     print("running louvainCluster find partition...")
     part = louvain.find_partition(igraph, method='Modularity')
-    print(part.membership)
     exit(0)
 
 
-def convert_sparse_to_igraph(matrix):
+def convert_sparse_to_igraph(indices, matrix):
     """
     Convert an adjacency graph in scipy sparse matrix
     format into an iGraph format.
 
     https://groups.google.com/forum/#!topic/network-analysis-with-igraph/gXHzgrtdxvE
+    https://stackoverflow.com/questions/29655111/igraph-graph-from-numpy-or-pandas-adjacency-matrix
 
-    :param matrix: scipy.sparse.csr_matrix
+    :param matrix: numpy.array
     :return graph: igraph.Graph
         iGraph representation of a weighted sparse adj matrix
     """
-    sources, targets = matrix.nonzero()
-    weights = matrix[sources, targets]
-    weights = array(weights)[0]
-    igraph = Graph(zip(sources, targets), directed=True,
-                   edge_attrs={'weight': weights})
-    return igraph
+    # sources, targets = matrix.nonzero()
+    # weights = matrix[sources, targets]
+    # weights = np.array(weights)[0]
+    # print(dir(louvain))
+    # ig = igraph.Graph(zip(sources, targets), directed=True,
+    #                edge_attrs={'weight': weights})
+    # return ig
+    g = igraph.Graph.Adjacency((matrix > 0).tolist())
+    g.es['weight'] = matrix[matrix.nonzero()]
+    # g.vs['label'] = node_names  # or a.index/a.columns
+    return g
+
 
 def get_sparse_knn_graph(df, k, algorithm):
     """
@@ -60,10 +67,13 @@ def get_sparse_knn_graph(df, k, algorithm):
         ie. 'ball_tree'
     :return:
     """
+    print("df shape", df.shape)
     X = np.array(df)
     nbrs = NearestNeighbors(n_neighbors=k, algorithm=algorithm).fit(X)
-    knn_graph = nbrs.kneighbors_graph(X)
-    return knn_graph
+    distances, indices = nbrs.kneighbors(X)
+    knn_graph = nbrs.kneighbors_graph(X).toarray()
+    print("indices, graph", len(indices), knn_graph.shape)
+    return indices, knn_graph
 
 
 def read_exprs_as_df(fn):
@@ -73,7 +83,7 @@ def read_exprs_as_df(fn):
     :param fn: string
     :return df: pandas.DataFrame
     """
-    df = pd.read_table(fn, index_col=0)
+    df = pd.read_table(fn, index_col=0).T
     return df
 
 

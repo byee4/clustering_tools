@@ -1,0 +1,5 @@
+#!/usr/bin/env louvainCluster.cwl
+
+inFile:
+  class: File
+  path: /home/bay001/projects/codebase/clustering_tools/data/raj_6_star_gene_exon_tagged.dge.tsv

@@ -7,7 +7,7 @@ class: CommandLineTool
 baseCommand: [louvainCluster.py]
 
 inputs:
-  InputTSV:
+  inFile:
     type: File
     inputBinding:
       position: 1
